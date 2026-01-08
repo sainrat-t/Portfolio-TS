@@ -11,10 +11,9 @@ export const projects: Project[] = [
     features: [
       "Enregistrement vocal simplifié",
       "Guidage d'interview par IA",
-      "Contexte historique automatique",
       "Génération de biographie"
     ],
-    stack: ["React Native", "Whisper API", "GPT-4", "Node.js"]
+    stack: ["Google AI Studio", "React", "Supabase", "Gemini API", "Tailwind CSS", "TypeScript"]
   },
   {
     title: "Live History",
@@ -22,14 +21,14 @@ export const projects: Project[] = [
     status: "Building",
     description: "Application éducative permettant de dialoguer naturellement avec des personnages historiques simulés pour comprendre les nuances d'une époque.",
     features: ["RAG (Retrieval Augmented Gen)", "Vector DB", "Personality Prompting"],
-    stack: ["Python", "LangChain", "Pinecone"]
+    stack: ["Google AI Studio", "React", "TypeScript", "Tailwind CSS", "Web Audio API"]
   },
   {
     title: "Neon Riot",
     icon: <Gamepad2 className="text-pink-400" size={24} />,
     status: "Building",
     description: "Jeu de stratégie arcade frénétique. Gérez des unités 'wind-up toys' cybernétiques. Le gameplay repose sur un timing précis et la gestion d'énergie.",
-    features: ["Godot Engine", "Physique 2D", "Sound Design"],
-    stack: ["Godot", "GDScript"]
+    features: ["Physique Arcade Flipper", "Mécanique de 'Wind-Up' Tactique", "Classes à Synergies"],
+    stack: ["Godot", "GDScript", "Antigravity"]
   }
 ];

@@ -9,34 +9,34 @@ export const StrategistView: React.FC = () => {
       company: "Cardiweb",
       role: "Head of Product Management",
       period: "Juil 2023 - Présent",
-      desc: "Management de l'équipe Product (PM, PO, Designers) et structuration des pratiques Discovery & Delivery. Accompagnement des clients grands comptes dans la définition de leur stratégie produit. Référent sur les sujets transverses complexes (Scaling, GenAI).",
-      tags: ["Leadership", "Discovery & Delivery", "Stratégie", "Management"]
+      desc: "Pilotage de l'équipe Produit et structuration des process de Discovery & Delivery à l'échelle. Accompagnement stratégique des Grands Comptes pour transformer des défis technologiques (GenAI, Scaling) en produits rentables et actionnables.",
+      tags: ["Team Leadership", "Strategy", "GenAI", "Scaling"]
     },
     {
       company: "Cardiweb",
       role: "Lead Product Manager",
       period: "Sept 2022 - Juil 2023",
-      desc: "Co-création de produits digitaux sur-mesure avec une forte exigence UX et technique. Leadership en avant-vente et gestion de la relation client.",
-      tags: ["Avant-vente", "UX/UI", "Cadrage"]
+      desc: "Leadership en avant-vente et cadrage de produits sur-mesure à forte complexité technique. Pilotage de la conception UX/UI pour aligner les enjeux business clients avec les réalités de production.",
+      tags: ["Avant-vente", "Cadrage Technique", "UX Strategy", "Complex Delivery"]
     },
     {
       company: "Haulogy",
       role: "Product Manager",
       period: "Sept 2018 - Jan 2021",
-      desc: "Responsable des opérations IT France pour un éditeur SaaS énergie. Pilotage du déploiement agile, adaptation des solutions au marché français et gestion des clients (gaz et électricité).",
-      tags: ["SaaS", "Énergie", "Agile", "Opérations IT"]
+      desc: "Adaptation et déploiement d'un SaaS B2B (Énergie) pour le marché français. Responsable des opérations IT et maîtrise des flux techniques (API, Web Services) pour l'intégration chez les clients fournisseurs d'énergie.",
+      tags: ["SaaS B2B", "API & Web Services", "Ops IT", "Agile"]
     },
     {
-      company: "Consultant IT",
+      company: "mc2i",
       role: "Product Manager / AMOA",
       period: "2015 - 2018",
-      desc: "Mission chez Enedis : Pilotage de projets SI liés à la distribution d'électricité et aux compteurs intelligents. Coordination MOA/MOE, recette et conduite du changement.",
-      tags: ["SI Complexes", "Utilities", "Pilotage"]
+      desc: "Mission chez Enedis : Pilotage de projets SI critiques pour Enedis liés à la distribution d'électricité et aux compteurs intelligents. Gestion des flux de données de comptage et coordination technico-fonctionnelle entre les métiers et les intégrateurs.",
+      tags: ["Smart Data", "Systèmes Complexes", "Coordination SI"]
     }
   ];
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -74,37 +74,36 @@ export const StrategistView: React.FC = () => {
           <Building2 className="text-slate-400" />
           Parcours
         </h2>
-        
+
         {/* Timeline Container - Reverted to solid grey line */}
         <div className="relative border-l-2 border-slate-200 ml-3 space-y-10 pb-4">
           {experiences.map((exp, index) => (
             <div key={index} className="ml-8 relative">
-              
+
               {/* Timeline Dot - Perfectly centered on the line (-left-[41px] aligns w-5 center to 2px border center) */}
               <div className="absolute -left-[41px] top-6 flex items-center justify-center h-5 w-5">
-                 {/* Pulse/Ping animation for current role */}
-                 {index === 0 && (
-                     <span className="absolute h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping"></span>
-                 )}
-                 {/* The actual dot */}
-                 <span className={`relative h-5 w-5 rounded-full border-4 shadow-sm z-10 ${index === 0 ? 'bg-blue-600 border-white ring-2 ring-blue-100' : 'bg-slate-300 border-white'}`} />
+                {/* Pulse/Ping animation for current role */}
+                {index === 0 && (
+                  <span className="absolute h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping"></span>
+                )}
+                {/* The actual dot */}
+                <span className={`relative h-5 w-5 rounded-full border-4 shadow-sm z-10 ${index === 0 ? 'bg-blue-600 border-white ring-2 ring-blue-100' : 'bg-slate-300 border-white'}`} />
               </div>
 
               {/* Card - With Idle Animation for current role */}
-              <motion.div 
-                className={`p-6 rounded-lg border transition-all relative bg-white ${
-                    index === 0 
-                    ? 'border-blue-200 shadow-sm' 
-                    : 'border-slate-200 shadow-sm hover:shadow-md'
-                }`}
+              <motion.div
+                className={`p-6 rounded-lg border transition-all relative bg-white ${index === 0
+                  ? 'border-blue-200 shadow-sm'
+                  : 'border-slate-200 shadow-sm hover:shadow-md'
+                  }`}
                 animate={index === 0 ? {
-                    boxShadow: ['0 1px 2px 0 rgba(0, 0, 0, 0.05)', '0 4px 12px -2px rgba(59, 130, 246, 0.15)', '0 1px 2px 0 rgba(0, 0, 0, 0.05)'],
-                    borderColor: ['#bfdbfe', '#60a5fa', '#bfdbfe']
+                  boxShadow: ['0 1px 2px 0 rgba(0, 0, 0, 0.05)', '0 4px 12px -2px rgba(59, 130, 246, 0.15)', '0 1px 2px 0 rgba(0, 0, 0, 0.05)'],
+                  borderColor: ['#bfdbfe', '#60a5fa', '#bfdbfe']
                 } : {}}
                 transition={index === 0 ? {
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut"
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
                 } : {}}
               >
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-2">
@@ -112,9 +111,8 @@ export const StrategistView: React.FC = () => {
                     <h3 className="text-lg font-bold text-slate-900">{exp.role}</h3>
                     <p className="text-slate-500 font-medium">{exp.company}</p>
                   </div>
-                  <span className={`text-xs font-mono px-2 py-1 rounded mt-2 md:mt-0 inline-block border ${
-                      index === 0 ? 'text-blue-700 bg-blue-50 border-blue-100' : 'text-slate-500 bg-slate-100 border-slate-200'
-                  }`}>
+                  <span className={`text-xs font-mono px-2 py-1 rounded mt-2 md:mt-0 inline-block border ${index === 0 ? 'text-blue-700 bg-blue-50 border-blue-100' : 'text-slate-500 bg-slate-100 border-slate-200'
+                    }`}>
                     {exp.period}
                   </span>
                 </div>
