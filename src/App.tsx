@@ -28,50 +28,51 @@ export default function App() {
       <Background mode={mode} />
 
       {/* Strategist Avatar - Fixed Top Left (Desktop Only) */}
-      <AnimatePresence>
-        {mode === 'strategist' && (
-          <motion.div
-            initial={{ opacity: 0, x: -100, rotate: -10 }}
-            animate={{ opacity: 1, x: 0, rotate: 3 }}
-            exit={{ opacity: 0, x: -50, rotate: -10 }}
-            transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.2 }}
-            className="absolute top-8 left-8 z-50 hidden lg:block"
-          >
-            <div className="relative group cursor-pointer">
-              {/* Note: Ensure a file named 'avatar.png' exists in your public folder */}
-              <img
-                src="/avatar.png"
-                alt="Thibaut Sainrat"
-                className="w-32 lg:w-48 h-auto rounded-xl border-4 border-white shadow-xl transform transition-transform duration-300 group-hover:scale-105 group-hover:rotate-0 bg-slate-200"
-              />
-            </div>
-          </motion.div>
-        )}
 
-        {/* Builder Avatar - Fixed Top Right (Desktop Only) */}
-        {mode === 'builder' && (
-          <motion.div
-            initial={{ opacity: 0, x: 100, rotate: 10 }}
-            animate={{ opacity: 1, x: 0, rotate: -3 }}
-            exit={{ opacity: 0, x: 50, rotate: 10 }}
-            transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.2 }}
-            className="absolute top-8 right-8 z-50 hidden lg:block"
-          >
-            <div className="relative group cursor-pointer">
-              <img
-                src="/avatar_neo.png"
-                alt="Thibaut Sainrat"
-                className="w-32 lg:w-48 h-auto rounded-xl border-4 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.5)] transform transition-transform duration-300 group-hover:scale-105 group-hover:rotate-0 bg-slate-900"
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className={`relative z-10 ${containerClasses[mode]}`}>
 
         {/* Header / Hero */}
-        <header className="flex flex-col items-center text-center space-y-8 mb-16">
+        <header className="relative flex flex-col items-center text-center space-y-8 mb-16">
+          <AnimatePresence>
+            {mode === 'strategist' && (
+              <motion.div
+                initial={{ opacity: 0, x: -100, rotate: -10 }}
+                animate={{ opacity: 1, x: 0, rotate: 3 }}
+                exit={{ opacity: 0, x: -50, rotate: -10 }}
+                transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.2 }}
+                className="absolute top-0 left-0 z-50 hidden lg:block"
+              >
+                <div className="relative group cursor-pointer">
+                  {/* Note: Ensure a file named 'avatar.png' exists in your public folder */}
+                  <img
+                    src="/avatar.png"
+                    alt="Thibaut Sainrat"
+                    className="w-32 lg:w-48 h-auto rounded-xl border-4 border-white shadow-xl transform transition-transform duration-300 group-hover:scale-105 group-hover:rotate-0 bg-slate-200"
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Builder Avatar - Fixed Top Right (Desktop Only) */}
+            {mode === 'builder' && (
+              <motion.div
+                initial={{ opacity: 0, x: 100, rotate: 10 }}
+                animate={{ opacity: 1, x: 0, rotate: -3 }}
+                exit={{ opacity: 0, x: 50, rotate: 10 }}
+                transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.2 }}
+                className="absolute top-0 right-0 z-50 hidden lg:block"
+              >
+                <div className="relative group cursor-pointer">
+                  <img
+                    src="/avatar_neo.png"
+                    alt="Thibaut Sainrat"
+                    className="w-32 lg:w-48 h-auto rounded-xl border-4 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.5)] transform transition-transform duration-300 group-hover:scale-105 group-hover:rotate-0 bg-slate-900"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div className="space-y-4 max-w-2xl">
             <h1 className={`text-4xl md:text-6xl font-extrabold tracking-tight transition-colors duration-500 ${mode === 'builder' ? 'font-mono text-emerald-400' : 'text-slate-900'
               }`}>
