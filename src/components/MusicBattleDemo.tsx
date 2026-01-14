@@ -93,7 +93,7 @@ export const MusicBattleDemo: React.FC = () => {
                         </p>
 
                         <div className="flex flex-wrap gap-2 mt-2">
-                            {['React', 'Socket.io', 'Gamification', 'UX Design'].map(tag => (
+                            {['React', 'Google AI Studio', 'Gamification', 'UX Design'].map(tag => (
                                 <Badge key={tag} mode="builder">{tag}</Badge>
                             ))}
                         </div>
@@ -102,7 +102,7 @@ export const MusicBattleDemo: React.FC = () => {
                             <a href="https://music-battle.onrender.com/" target="_blank" rel="noopener noreferrer">
                                 <Button mode="builder" variant="secondary" className="text-xs h-8">
                                     <ExternalLink size={14} className="mr-2" />
-                                    Visite l'app
+                                    {'>'} Run App_
                                 </Button>
                             </a>
                         </div>
