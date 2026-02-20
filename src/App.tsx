@@ -9,7 +9,13 @@ import { ViewMode } from './types';
 
 
 
+import { OGPreview } from './components/OGPreview';
+
 export default function App() {
+  if (window.location.pathname === '/og-preview') {
+    return <OGPreview />;
+  }
+
   const [mode, setMode] = useState<ViewMode>('strategist');
 
   const themeClasses = {

@@ -60,11 +60,7 @@ export const MusicBattleDemo: React.FC = () => {
     return (
         <div
             onMouseMove={handleActivity}
-            className="relative overflow-hidden rounded-xl border border-emerald-500/30 bg-slate-900 p-6 shadow-2xl transition-all duration-100"
-            style={{
-                boxShadow: `0 0 ${20 + intensity * 50}px ${glowColor}`,
-                borderColor: `rgba(16, 185, 129, ${0.3 + intensity})`
-            }}
+            className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl transition-all duration-100"
         >
             {/* Background Particles/Effect */}
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">

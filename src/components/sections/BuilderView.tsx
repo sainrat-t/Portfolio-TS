@@ -24,6 +24,21 @@ export const BuilderView: React.FC = () => {
           <Zap size={20} />
           Current Highlight
         </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.filter(p => p.link).map((project, index) => (
+            <div key={`featured-${index}`} className="md:col-span-2 lg:col-span-3">
+              <ProjectCard project={project} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Running */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-slate-400 flex items-center gap-2">
+          <Flame size={20} />
+          Running
+        </h2>
         <MusicBattleDemo />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-500 font-mono px-4">
           <div>
@@ -43,8 +58,8 @@ export const BuilderView: React.FC = () => {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project, index) => (
-            <ProjectCard key={index} project={project} />
+          {projects.filter(p => !p.link).map((project, index) => (
+            <ProjectCard key={`standard-${index}`} project={project} />
           ))}
         </div>
       </div>

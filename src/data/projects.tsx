@@ -4,16 +4,17 @@ import { Project } from '../types';
 
 export const projects: Project[] = [
   {
-    title: "Mémoire (MVP)",
+    title: "MyMémoires",
     icon: <Brain className="text-purple-400" size={24} />,
     status: "MVP Ready",
     description: "Une plateforme pour simplifier la transmission des histoires de vie des résidents en EHPAD. L'ambition est de guider l'interviewer et de structurer les récits. L'IA structure ensuite les enregistrements en biographies littéraires soignées.",
+    link: "https://www.mymemoires.com",
     features: [
       "Enregistrement vocal simplifié",
       "Guidage d'interview par IA",
       "Génération de biographie"
     ],
-    stack: ["Google AI Studio", "React", "Supabase", "Gemini API", "Tailwind CSS", "TypeScript"]
+    stack: ["React", "Supabase", "Gemini API", "Tailwind CSS", "TypeScript"]
   },
   {
     title: "Live History",
