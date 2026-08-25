@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Linkedin, Mail, Github } from 'lucide-react';
+import { Linkedin, Mail, Github, PenLine } from 'lucide-react';
 import { Switch } from './components/Switch';
 import { Background } from './components/Background';
 import { StrategistView } from './components/sections/StrategistView';
@@ -124,6 +124,17 @@ export default function App() {
               © {new Date().getFullYear()} Thibaut Sainrat.
             </div>
             <div className="flex items-center gap-6">
+              {/* Blog: the one link whose destination isn't guessable from a glyph, so it keeps a label */}
+              <a
+                href="https://sainrat.writizzy.blog/"
+                target="_blank"
+                rel="noreferrer"
+                className={`inline-flex items-center gap-2 text-sm transition-colors ${mode === 'builder' ? 'font-mono hover:text-emerald-400' : 'hover:text-blue-600'
+                  }`}
+              >
+                <PenLine size={18} />
+                <span>{mode === 'builder' ? '> Blog_' : 'Blog'}</span>
+              </a>
               <a
                 href="https://www.linkedin.com/in/thibaut-sainrat"
                 target="_blank"

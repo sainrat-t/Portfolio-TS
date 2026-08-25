@@ -7,17 +7,38 @@ export const StrategistView: React.FC = () => {
   const experiences = [
     {
       company: "Cardiweb",
+      role: "CPO / Directeur de pôle",
+      period: "Mai 2026 - Présent",
+      desc: "Direction du pôle Produit : vision, structuration de l'offre et arbitrage des investissements. Définition de la stratégie IA et alignement des équipes Produit, Design et Tech sur les enjeux de croissance.",
+      tags: ["Vision Produit", "Stratégie IA", "Management", "Business"]
+    },
+    {
+      company: "MyMémoires",
+      role: "Fondateur",
+      period: "Nov 2025 - Présent",
+      desc: "Création d'une plateforme qui aide les EHPAD à recueillir et transmettre les histoires de vie de leurs résidents. Du problème terrain au produit : discovery, design, développement et mise en marché.",
+      tags: ["Entrepreneuriat", "0 to 1", "GenAI", "Product & Code"]
+    },
+    {
+      company: "Cardiweb",
       role: "Head of Product Management",
-      period: "Juil 2023 - Présent",
+      period: "Oct 2023 - Mai 2026",
       desc: "Pilotage de l'équipe Produit et structuration des process de Discovery & Delivery à l'échelle. Accompagnement stratégique des Grands Comptes pour transformer des défis technologiques (GenAI, Scaling) en produits rentables et actionnables.",
       tags: ["Team Leadership", "Strategy", "GenAI", "Scaling"]
     },
     {
       company: "Cardiweb",
       role: "Lead Product Manager",
-      period: "Sept 2022 - Juil 2023",
+      period: "Sept 2022 - Oct 2023",
       desc: "Leadership en avant-vente et cadrage de produits sur-mesure à forte complexité technique. Pilotage de la conception UX/UI pour aligner les enjeux business clients avec les réalités de production.",
       tags: ["Avant-vente", "Cadrage Technique", "UX Strategy", "Complex Delivery"]
+    },
+    {
+      company: "Cardiweb",
+      role: "Senior Product Manager",
+      period: "Oct 2021 - Sept 2022",
+      desc: "Prise en charge end-to-end de produits SaaS pour des clients Grands Comptes : discovery, cadrage fonctionnel et pilotage du delivery en lien direct avec les équipes techniques.",
+      tags: ["Discovery", "Delivery", "SaaS", "Grands Comptes"]
     },
     {
       company: "Haulogy",
@@ -28,7 +49,7 @@ export const StrategistView: React.FC = () => {
     },
     {
       company: "mc2i",
-      role: "Product Manager / AMOA",
+      role: "Product Owner / AMOA",
       period: "2015 - 2018",
       desc: "Mission chez Enedis : Pilotage de projets SI critiques pour Enedis liés à la distribution d'électricité et aux compteurs intelligents. Gestion des flux de données de comptage et coordination technico-fonctionnelle entre les métiers et les intégrateurs.",
       tags: ["Smart Data", "Systèmes Complexes", "Coordination SI"]
@@ -77,30 +98,32 @@ export const StrategistView: React.FC = () => {
 
         {/* Timeline Container - Reverted to solid grey line */}
         <div className="relative border-l-2 border-slate-200 ml-3 space-y-10 pb-4">
-          {experiences.map((exp, index) => (
+          {experiences.map((exp, index) => {
+            const isCurrent = exp.period.includes('Présent');
+            return (
             <div key={index} className="ml-8 relative">
 
               {/* Timeline Dot - Perfectly centered on the line (-left-[41px] aligns w-5 center to 2px border center) */}
               <div className="absolute -left-[41px] top-6 flex items-center justify-center h-5 w-5">
                 {/* Pulse/Ping animation for current role */}
-                {index === 0 && (
+                {isCurrent && (
                   <span className="absolute h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping"></span>
                 )}
                 {/* The actual dot */}
-                <span className={`relative h-5 w-5 rounded-full border-4 shadow-sm z-10 ${index === 0 ? 'bg-blue-600 border-white ring-2 ring-blue-100' : 'bg-slate-300 border-white'}`} />
+                <span className={`relative h-5 w-5 rounded-full border-4 shadow-sm z-10 ${isCurrent ? 'bg-blue-600 border-white ring-2 ring-blue-100' : 'bg-slate-300 border-white'}`} />
               </div>
 
               {/* Card - With Idle Animation for current role */}
               <motion.div
-                className={`p-6 rounded-lg border transition-all relative bg-white ${index === 0
+                className={`p-6 rounded-lg border transition-all relative bg-white ${isCurrent
                   ? 'border-blue-200 shadow-sm'
                   : 'border-slate-200 shadow-sm hover:shadow-md'
                   }`}
-                animate={index === 0 ? {
+                animate={isCurrent ? {
                   boxShadow: ['0 1px 2px 0 rgba(0, 0, 0, 0.05)', '0 4px 12px -2px rgba(59, 130, 246, 0.15)', '0 1px 2px 0 rgba(0, 0, 0, 0.05)'],
                   borderColor: ['#bfdbfe', '#60a5fa', '#bfdbfe']
                 } : {}}
-                transition={index === 0 ? {
+                transition={isCurrent ? {
                   duration: 4,
                   repeat: Infinity,
                   ease: "easeInOut"
@@ -111,7 +134,7 @@ export const StrategistView: React.FC = () => {
                     <h3 className="text-lg font-bold text-slate-900">{exp.role}</h3>
                     <p className="text-slate-500 font-medium">{exp.company}</p>
                   </div>
-                  <span className={`text-xs font-mono px-2 py-1 rounded mt-2 md:mt-0 inline-block border ${index === 0 ? 'text-blue-700 bg-blue-50 border-blue-100' : 'text-slate-500 bg-slate-100 border-slate-200'
+                  <span className={`text-xs font-mono px-2 py-1 rounded mt-2 md:mt-0 inline-block border ${isCurrent ? 'text-blue-700 bg-blue-50 border-blue-100' : 'text-slate-500 bg-slate-100 border-slate-200'
                     }`}>
                     {exp.period}
                   </span>
@@ -124,7 +147,8 @@ export const StrategistView: React.FC = () => {
                 </div>
               </motion.div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </motion.div>

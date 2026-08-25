@@ -3,6 +3,12 @@ import { ExternalLink } from 'lucide-react';
 import { Badge } from './ui/Badge';
 import { Project } from '../types';
 
+const statusStyles: Record<string, string> = {
+  'MVP Ready': 'border-purple-500/30 text-purple-400 bg-purple-500/10',
+  'Studio': 'border-cyan-500/30 text-cyan-400 bg-cyan-500/10',
+  default: 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+};
+
 export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showReadMore, setShowReadMore] = useState(false);
@@ -52,10 +58,7 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 group-hover:bg-slate-700 transition-colors">
           {project.icon}
         </div>
-        <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded border ${project.status === 'MVP Ready'
-          ? 'border-purple-500/30 text-purple-400 bg-purple-500/10'
-          : 'border-amber-500/30 text-amber-400 bg-amber-500/10'
-          }`}>
+        <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded border ${statusStyles[project.status] ?? statusStyles.default}`}>
           {project.status}
         </span>
       </div>
@@ -107,7 +110,7 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
             className="group relative inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-900 bg-purple-500 hover:bg-purple-400 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)] z-10"
           >
             <ExternalLink size={14} />
-            <span>Rejoindre la Bêta</span>
+            <span>{project.cta ?? 'Rejoindre la Bêta'}</span>
           </a>
         </div>
       )}
