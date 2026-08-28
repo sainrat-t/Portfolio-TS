@@ -1,0 +1,1224 @@
+/* Portfolio Thibaut Sainrat — panorama Paris 18e.
+   Le scroll vertical pilote en parallèle un carrousel horizontal de 7 panneaux
+   et une caméra qui traverse le panorama pixel-art dessiné au canvas. */
+
+:root {
+  --bg: #efead5;
+
+  --ink: #1b1a17;
+  --ink-mid: #4a463c;
+  --ink-soft: #6d685b;
+  --ink-faint: #8b8474;
+  --rule: rgba(27, 26, 23, 0.22);
+  --rule-strong: rgba(27, 26, 23, 0.28);
+  --rule-soft: rgba(27, 26, 23, 0.14);
+
+  --accent: #c4452b;
+  --archived: #9a9382;
+  --egg-bg: rgba(243, 236, 218, 0.97);
+  --egg-lit: #fffdf5;
+  --egg-shade: #b0a68e;
+
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Après le Moulin, le ciel bascule en bleu nuit : l'encre passe en tons clairs.
+   L'accent est inchangé — il tient sur les deux fonds. */
+[data-night='1'] {
+  --ink: #f4efe3;
+  --ink-mid: #d6cfbf;
+  --ink-soft: #c2baa8;
+  --ink-faint: #a8a08d;
+  --rule: rgba(244, 239, 227, 0.3);
+  --rule-strong: rgba(244, 239, 227, 0.36);
+  --rule-soft: rgba(244, 239, 227, 0.18);
+  --egg-bg: rgba(16, 18, 30, 0.96);
+  --egg-lit: #3c4259;
+  --egg-shade: #080a12;
+}
+
+[data-night],
+[data-night] * {
+  transition: color 0.55s ease, border-color 0.55s ease, background-color 0.55s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+/* ── Ossature ──────────────────────────────────────────────── */
+
+.om-page {
+  position: relative;
+  background: var(--bg);
+}
+
+/* Hauteurs de repli avant le premier measure() : App les repasse en pixels,
+   mesurés sur window.innerHeight, pour que scroller et sticky restent d'accord. */
+.om-scroller {
+  position: relative;
+  height: 700vh;
+}
+
+.om-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  color: var(--ink);
+}
+
+.om-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.om-track {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  will-change: transform;
+}
+
+/* ── En-tête ───────────────────────────────────────────────── */
+
+.om-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px clamp(16px, 3vw, 40px);
+}
+
+.om-logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.om-logo span {
+  color: var(--ink);
+}
+
+.om-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 28px);
+}
+
+.om-nav-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+
+.om-nav-link:hover {
+  color: var(--accent);
+}
+
+.om-pill {
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: none;
+  padding: 7px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.om-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Panneaux ──────────────────────────────────────────────── */
+
+/* Chaque panneau est overflow:hidden sur 100vh : contenu + paddings doivent
+   tenir sous 100vh à 540 px de haut, sinon le texte chevauche le panorama. */
+.om-panel {
+  flex: none;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(58px, 11vh, 112px) clamp(16px, 7vw, 110px) 28vh;
+}
+
+/* Réserve basse de 28vh : la bande d'art en occupe ≈26vh. */
+.om-panel--center {
+  align-items: center;
+  text-align: center;
+  padding-left: clamp(16px, 6vw, 80px);
+  padding-right: clamp(16px, 6vw, 80px);
+}
+
+/* Le hero n'a pas de réserve : son contenu vit dans une boîte de 62vh, ce qui
+   garantit que « Scrollez » ne passe jamais sur les toits. */
+.om-panel--hero {
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: center;
+  padding: 0 clamp(16px, 6vw, 80px);
+}
+
+.om-hero-box {
+  height: 62vh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(50px, 9vh, 96px) 0 12px;
+}
+
+/* ── Typographie ───────────────────────────────────────────── */
+
+.om-kicker {
+  font-family: var(--mono);
+  font-size: clamp(9.5px, 1.3vw, 11px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 22px;
+}
+
+.om-h1 {
+  margin: 0;
+  font-weight: 300;
+  font-size: clamp(27px, 7.4vw, 104px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  max-width: 16em;
+  text-wrap: balance;
+}
+
+.om-h2 {
+  margin: 0;
+  font-weight: 300;
+  font-size: clamp(21px, 5vw, 62px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.om-h2--center {
+  font-size: clamp(23px, 5.6vw, 74px);
+  line-height: 1.08;
+  max-width: 22em;
+  text-wrap: balance;
+}
+
+.om-h2--contact {
+  font-size: clamp(24px, 6.4vw, 88px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  max-width: 20em;
+}
+
+.om-h3 {
+  margin: 0 0 10px;
+  font-weight: 400;
+  font-size: clamp(16px, 2.4vw, 27px);
+  line-height: 1.25;
+}
+
+em {
+  font-style: italic;
+}
+
+.om-lede {
+  margin: clamp(14px, 2.8vh, 30px) 0 0;
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 1.6vw, 14px);
+  line-height: 1.9;
+  color: var(--ink-soft);
+  max-width: 46ch;
+}
+
+.om-body {
+  margin: 26px 0 0;
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 1.5vw, 13px);
+  line-height: 1.9;
+  color: var(--ink-soft);
+  max-width: 58ch;
+}
+
+.om-hint {
+  margin-top: clamp(12px, 2.4vh, 26px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: om-hint 2.4s ease-in-out infinite;
+}
+
+.om-hint-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.om-hint-arrow {
+  font-size: 15px;
+  color: var(--accent);
+}
+
+@keyframes om-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+/* ── Grilles & cartes ──────────────────────────────────────── */
+
+.om-grid {
+  display: grid;
+  gap: clamp(20px, 3vw, 52px);
+  max-width: 1180px;
+}
+
+.om-grid--method {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.om-grid--projects {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(18px, 3vw, 64px);
+}
+
+.om-grid--lab {
+  grid-template-columns: repeat(auto-fit, minmax(198px, 1fr));
+}
+
+.om-card {
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+}
+
+.om-card-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.om-card-body {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 1.5vw, 11.5px);
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+/* ── 04 Parcours ───────────────────────────────────────────── */
+
+/* Marges et paddings en vh : les 7 lignes doivent tenir sur 540 px de haut. */
+.om-panel--parcours .om-kicker {
+  margin-bottom: clamp(8px, 1.4vh, 18px);
+}
+
+.om-panel--parcours .om-h2 {
+  margin-bottom: clamp(12px, 1.6vh, 24px);
+}
+
+.om-timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0 clamp(24px, 4vw, 64px);
+  max-width: 1240px;
+}
+
+.om-xp {
+  display: grid;
+  grid-template-columns: minmax(78px, 150px) 1fr;
+  gap: clamp(10px, 2vw, 26px);
+  padding: clamp(2px, 0.6vh, 6px) 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.om-xp-period {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  padding-top: 2px;
+}
+
+.om-xp--current .om-xp-period {
+  color: var(--accent);
+}
+
+.om-xp-role {
+  font-size: clamp(12px, 1.7vw, 20px);
+  line-height: 1.25;
+}
+
+.om-xp-company {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+/* ── 05 Projets ────────────────────────────────────────────── */
+
+.om-panel--projets .om-h2 {
+  margin-bottom: 28px;
+}
+
+.om-project-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+}
+
+.om-project-head h3 {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(18px, 2.8vw, 34px);
+}
+
+.om-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.om-project-body {
+  margin: 14px 0 0;
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 1.5vw, 11.5px);
+  line-height: 1.85;
+  color: var(--ink-soft);
+  max-width: 44ch;
+}
+
+.om-stack {
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+.om-link {
+  display: inline-block;
+  margin-top: 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--accent);
+  color: var(--accent);
+  padding-bottom: 2px;
+}
+
+/* ── 06 Laboratoire ────────────────────────────────────────── */
+
+.om-panel--lab .om-h2 {
+  margin-bottom: 38px;
+}
+
+.om-lab-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.om-lab-head h3 {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(15.5px, 2.4vw, 26px);
+}
+
+.om-status {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.om-status--archived {
+  color: var(--archived);
+}
+
+.om-lab-body {
+  margin: 12px 0 0;
+  font-family: var(--mono);
+  font-size: clamp(10px, 1.4vw, 11px);
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+.om-lab-stack {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+/* ── 07 Contact ────────────────────────────────────────────── */
+
+.om-contact-actions {
+  margin-top: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.om-chip {
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  padding: 10px clamp(16px, 4vw, 26px);
+  font-family: var(--mono);
+  font-size: clamp(11px, 1.6vw, 12px);
+  letter-spacing: 0.06em;
+}
+
+.om-chip--ghost {
+  border-color: var(--rule-strong);
+}
+
+.om-chip:hover {
+  border-color: var(--accent);
+}
+
+.om-copyright {
+  margin-top: 44px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── Easter eggs ───────────────────────────────────────────── */
+
+/* Zones cliquables posées sur le décor, aux coordonnées que le dessin renvoie.
+   Le calque laisse passer les clics et seules les boîtes les interceptent :
+   sinon il masquerait les liens des panneaux, qui sont en dessous (z-20).
+   Ni curseur, ni survol, ni marqueur — rien ne doit signaler leur présence. */
+.om-hits {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+}
+
+.om-hit {
+  position: absolute;
+  pointer-events: auto;
+}
+
+/* Le carrousel s'estompe pendant qu'un egg est ouvert : le site a déjà ce
+   langage — les panneaux voisins s'effacent au scroll — et ça règle d'un coup
+   la lisibilité de la fenêtre par-dessus le texte. */
+.om-track {
+  transition: opacity 0.35s ease;
+}
+
+.om-track--dimmed {
+  opacity: 0.16;
+}
+
+.om-egg-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 5vh, 56px) clamp(16px, 4vw, 48px);
+}
+
+/* Structure de fenêtre — barre de titre, corps, barre d'état — rendue avec le
+   vocabulaire du site : angles droits, aucune ombre. Le chrome est franchement
+   pixellisé (cadre épais, coins en escalier, croix en blocs) pour appartenir à
+   la même matière que le panorama ; le contenu, lui, reste éditorial. */
+.om-egg {
+  /* Le pas de l'escalier et l'épaisseur du cadre : ils cherchent le grain du
+     panorama, dont le pixel fait une douzaine de px CSS. Plus fin que ça, le
+     chrome redevient lisse et n'appartient plus à la même matière. */
+  --egg-px: 8px;
+  --egg-frame: 6px;
+  width: min(440px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Le cadre est le fond du conteneur, révélé par le padding : une bordure
+     classique serait rognée par le clip-path et se briserait aux coins. */
+  background: var(--ink);
+  padding: var(--egg-frame);
+  clip-path: polygon(
+    calc(var(--egg-px) * 2) 0,
+    calc(100% - var(--egg-px) * 2) 0,
+    calc(100% - var(--egg-px) * 2) var(--egg-px),
+    calc(100% - var(--egg-px)) var(--egg-px),
+    calc(100% - var(--egg-px)) calc(var(--egg-px) * 2),
+    100% calc(var(--egg-px) * 2),
+    100% calc(100% - var(--egg-px) * 2),
+    calc(100% - var(--egg-px)) calc(100% - var(--egg-px) * 2),
+    calc(100% - var(--egg-px)) calc(100% - var(--egg-px)),
+    calc(100% - var(--egg-px) * 2) calc(100% - var(--egg-px)),
+    calc(100% - var(--egg-px) * 2) 100%,
+    calc(var(--egg-px) * 2) 100%,
+    calc(var(--egg-px) * 2) calc(100% - var(--egg-px)),
+    var(--egg-px) calc(100% - var(--egg-px)),
+    var(--egg-px) calc(100% - var(--egg-px) * 2),
+    0 calc(100% - var(--egg-px) * 2),
+    0 calc(var(--egg-px) * 2),
+    var(--egg-px) calc(var(--egg-px) * 2),
+    var(--egg-px) var(--egg-px),
+    calc(var(--egg-px) * 2) var(--egg-px)
+  );
+  animation: om-egg-in 0.18s ease-out;
+}
+
+/* Biseau deux tons, comme une touche système : c'est ce relief tranché — et non
+   une ombre — qui fait lire une interface en pixels. */
+.om-egg-frame {
+  background: var(--egg-bg);
+  border: 3px solid;
+  border-color: var(--egg-lit) var(--egg-shade) var(--egg-shade) var(--egg-lit);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+@keyframes om-egg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* La barre de titre est en accent fixe : ses couleurs ne suivent donc pas le
+   cycle jour/nuit, sans quoi l'encre claire de la nuit deviendrait illisible. */
+.om-egg-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--accent);
+  border-bottom: 3px solid rgba(0, 0, 0, 0.28);
+  padding: 7px 7px 7px 13px;
+}
+
+.om-egg-bar-title {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f6efe0;
+}
+
+/* Bouton à biseau : deux paires de bordures claires/sombres, comme une touche
+   système. Rien n'est arrondi, rien n'est adouci. */
+.om-egg-close {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  background: #e8dfc8;
+  border: 3px solid;
+  border-color: #fdf8ec #7c7362 #7c7362 #fdf8ec;
+  color: #1b1a17;
+  cursor: pointer;
+}
+
+.om-egg-close:active {
+  border-color: #7c7362 #fdf8ec #fdf8ec #7c7362;
+}
+
+/* La croix est dessinée en blocs de 2px, pas avec une glyphe de police. */
+.om-egg-close::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 2px;
+  height: 2px;
+  background: currentColor;
+  box-shadow:
+    2px 2px currentColor,
+    4px 4px currentColor,
+    6px 6px currentColor,
+    8px 8px currentColor,
+    8px 0 currentColor,
+    6px 2px currentColor,
+    2px 6px currentColor,
+    0 8px currentColor;
+}
+
+.om-egg-body {
+  padding: 22px clamp(16px, 3vw, 26px) 24px;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Le portrait est une illustration lissée, pas du pixel art : surtout pas de
+   `image-rendering: pixelated` ici, contrairement à l'icône. */
+.om-egg-image {
+  display: block;
+  margin: 0 auto 18px;
+  max-width: 100%;
+  max-height: 44vh;
+  border: 1px solid var(--rule);
+}
+
+/* Icône à gauche du titre, comme dans une boîte de dialogue système. Affichée à
+   40px : l'icône Voxtral est du pixel art en blocs de 8, et 160 / 40 = 4, donc
+   chaque bloc retombe sur un nombre entier de pixels. */
+.om-egg-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.om-egg-head .om-egg-title {
+  margin: 0;
+}
+
+.om-egg-icon {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.om-egg-title {
+  margin: 0 0 14px;
+  font-weight: 400;
+  font-size: clamp(19px, 2.6vw, 26px);
+  line-height: 1.2;
+}
+
+.om-egg-text {
+  margin: 0 0 12px;
+  font-family: var(--mono);
+  font-size: clamp(10.5px, 1.4vw, 11.5px);
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+/* Pied de fenêtre : le lien à gauche, le code de déblocage à droite. */
+.om-egg-actions {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* Le code prend toute la largeur laissée par le lien : à largeur bridée il
+   retombait sur trois lignes. */
+.om-egg-code {
+  flex: 1 1 auto;
+  min-width: 14ch;
+  margin: 0;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  line-height: 1.7;
+  color: var(--ink-faint);
+}
+
+/* Le code est une commande, pas un easter egg : lui, on lui donne un curseur. */
+.om-egg-code-value {
+  display: inline-block;
+  padding: 2px 6px;
+  background: none;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.om-egg-code-value:hover {
+  border-color: var(--accent);
+}
+
+.om-egg-link {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--accent);
+  color: var(--accent);
+  padding-bottom: 2px;
+}
+
+/* Module du Laboratoire — la démo d'Engagement-Weighted Voting. La jauge est
+   segmentée en blocs plutôt que continue : c'est le registre du panorama, et
+   ça se lit mieux qu'une barre pleine à cette taille. */
+.om-demo {
+  margin: 4px 0 20px;
+  border: 1px solid var(--rule);
+  padding: 18px 16px 16px;
+  text-align: center;
+  /* Le cadre doit se laisser survoler sans que le texte se sélectionne. */
+  user-select: none;
+}
+
+.om-demo-label {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.om-demo-score {
+  font-family: var(--mono);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-mid);
+  margin: 6px 0 12px;
+  transition: color 0.15s ease;
+}
+
+.om-demo-score--live {
+  color: var(--accent);
+}
+
+.om-demo-gauge {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.om-demo-cell {
+  flex: 1;
+  height: 8px;
+  background: var(--rule);
+}
+
+.om-demo-cell--on {
+  background: var(--accent);
+}
+
+.om-demo-vote {
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: none;
+  padding: 7px 22px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.om-demo-vote:disabled {
+  border-color: var(--rule);
+  color: var(--ink-faint);
+  cursor: default;
+}
+
+.om-demo-vote:not(:disabled):hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.om-demo-hint {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  min-height: 1.2em;
+}
+
+/* ── Enregistreur MyMémoires, peau « Pixel » ────────────────────────────────
+   Conforme au contrat de peinture du handoff : les sept emplacements gardent
+   leurs cotes, seule la matière change. Ne jamais toucher aux dimensions
+   ci-dessous — un skin qui déplace une commande devient une punition. */
+.om-mm {
+  --mm-shell: #e2dac4;
+  --mm-edge: #a89e86;
+  --mm-lit: #f4eee0;
+  --mm-well: #2b2621;
+  --mm-well-edge: #1c1814;
+  --mm-tape: #6b4330;
+  --mm-hub: #e8e1d2;
+  --mm-chassis: #cdc3aa;
+  --mm-groove: #7d7563;
+  --mm-cap: #efe9df;
+  --mm-cap-lit: #fffdf7;
+  --mm-cap-base: #b4a992;
+  --mm-cap-down: #cfc5b2;
+  --mm-ink: #5f574b;
+
+  margin: 4px 0 20px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: var(--mm-shell);
+  border: 1px solid var(--mm-edge);
+  border-top-color: var(--mm-lit);
+  color: var(--mm-ink);
+}
+
+/* Emplacement 1 — ligne de face, 13px de haut. */
+.om-mm-face {
+  height: 13px;
+  line-height: 13px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Emplacement 2 — bandeau des bobines : 74 + 14 + 44 + 14 + 74 = 220. */
+.om-mm-reels {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 220px;
+  height: 74px;
+}
+
+.om-mm-reel {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  flex: none;
+  background: var(--mm-well);
+  border: 1px solid var(--mm-well-edge);
+  display: grid;
+  place-items: center;
+}
+
+/* Galette carrée et non ronde : c'est là que la peau pixel se distingue. Les
+   deux bobines sont identiques, à moitié remplies. */
+.om-mm-pack {
+  position: absolute;
+  background: var(--mm-tape);
+}
+
+.om-mm-hub {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--mm-hub);
+}
+
+/* Seules les dents tournent — et par crans, pas en rotation continue : une
+   rotation lissée trahirait immédiatement le pixel. */
+.om-mm-tooth {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: var(--mm-well);
+}
+
+.om-mm-tooth--on {
+  background: var(--mm-hub);
+}
+
+.om-mm-tooth[data-tooth='0'] { transform: translateY(-15px); }
+.om-mm-tooth[data-tooth='1'] { transform: translate(11px, -11px); }
+.om-mm-tooth[data-tooth='2'] { transform: translateX(15px); }
+.om-mm-tooth[data-tooth='3'] { transform: translate(11px, 11px); }
+.om-mm-tooth[data-tooth='4'] { transform: translateY(15px); }
+.om-mm-tooth[data-tooth='5'] { transform: translate(-11px, 11px); }
+.om-mm-tooth[data-tooth='6'] { transform: translateX(-15px); }
+.om-mm-tooth[data-tooth='7'] { transform: translate(-11px, -11px); }
+
+/* Emplacement 3 — créneau central, 44 × 30. Ici les cinq barres du vumètre. */
+.om-mm-slot {
+  width: 44px;
+  height: 30px;
+  flex: none;
+  background: var(--mm-well);
+  border: 1px solid var(--mm-well-edge);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.om-mm-vu {
+  width: 4px;
+  background: var(--accent);
+  transition: height 0.11s linear;
+}
+
+/* Emplacement 4 — compteur, 15px de haut. */
+.om-mm-counter {
+  height: 15px;
+  line-height: 15px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--mm-ink);
+}
+
+/* Emplacement 5 — châssis de touches, 243 × 64 hors tout, cadre 2, rainure 3.
+   Les cotes du contrat sont extérieures : garder `border-box`, sinon le cadre
+   et la rainure s'ajoutent par-dessus et le bloc pousse de 8px. */
+.om-mm-keyblock {
+  width: 243px;
+}
+
+.om-mm-keys {
+  width: 243px;
+  height: 64px;
+  display: flex;
+  gap: 3px;
+  padding: 0 1px;
+  background: var(--mm-chassis);
+  border: 2px solid var(--mm-groove);
+  overflow: hidden;
+}
+
+.om-mm-legends {
+  display: flex;
+  gap: 3px;
+  padding: 0 1px;
+  margin-top: 7px;
+}
+
+/* Capuchons : 150 et 84 de large, 50 de haut, course 8. Le relief passe par des
+   bordures par côté, jamais par une ombre. */
+.om-mm-cap {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
+  cursor: pointer;
+  background: var(--mm-cap);
+  border: 3px solid;
+  border-color: var(--mm-cap-lit) var(--mm-cap-base) var(--mm-cap-base) var(--mm-cap-lit);
+  transition: transform 0.09s steps(2), background-color 0.09s;
+}
+
+.om-mm-cap--main {
+  width: 150px;
+}
+
+.om-mm-cap--save {
+  width: 84px;
+}
+
+/* Enfoncement : soit maintenu par l'état (touche d'enregistrement pendant la
+   prise), soit le temps de l'appui pour les touches sans état. */
+.om-mm-cap--down,
+.om-mm-cap:active {
+  transform: translateY(8px);
+  background: var(--mm-cap-down);
+  border-color: var(--mm-cap-base) var(--mm-cap-lit) var(--mm-cap-lit) var(--mm-cap-base);
+}
+
+/* Pictogrammes d'époque : carré plein pour enregistrer, deux barres pour pause. */
+.om-mm-rec {
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+}
+
+.om-mm-pause {
+  width: 5px;
+  height: 14px;
+  background: var(--mm-ink);
+}
+
+/* La disquette est repeinte, jamais remplacée : c'est une règle du contrat. */
+.om-mm-floppy {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  background: var(--mm-ink);
+}
+
+/* Volet métallique en haut, étiquette en bas. Les deux doivent rester détachés
+   des bords et de largeurs franchement différentes : à largeurs voisines et
+   collés aux bords, les montants sombres restants se lisent comme un « H ». */
+.om-mm-floppy-shutter {
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  background: var(--mm-cap);
+}
+
+.om-mm-floppy-label {
+  position: absolute;
+  bottom: 2px;
+  left: 3px;
+  width: 12px;
+  height: 6px;
+  background: var(--mm-cap);
+}
+
+/* Emplacement 6 — légendes : 8px, interligne 10, offset 7. L'offset et
+   l'interligne appartiennent au squelette : une seule valeur pour tous les
+   skins, sinon la hauteur du bloc dépend de la fonte de la peau. */
+.om-mm-legend {
+  height: 10px;
+  line-height: 10px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--mm-ink);
+}
+
+.om-mm-legend--main {
+  width: 150px;
+}
+
+.om-mm-legend--save {
+  width: 84px;
+}
+
+/* Barre d'état : le compteur, comme dans une fenêtre système. */
+.om-egg-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 3px solid var(--rule);
+  padding: 8px clamp(16px, 3vw, 26px);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── Réglages d'espacement par panneau ─────────────────────── */
+
+.om-panel--hero .om-kicker {
+  margin-bottom: clamp(12px, 2.4vh, 26px);
+}
+
+.om-panel--methode .om-kicker,
+.om-panel--projets .om-kicker,
+.om-panel--lab .om-kicker {
+  margin-bottom: 18px;
+}
+
+.om-panel--methode .om-h2 {
+  margin-bottom: 44px;
+}
+
+/* ── Mobile ────────────────────────────────────────────────── */
+
+/* Même mise en page, texte fortement réduit — pas de layout mobile séparé.
+   Sous 680 px, l'en-tête garde le logo et une seule action, comme The Bridge. */
+@media (max-width: 680px) {
+  .om-header {
+    padding: 14px 16px;
+  }
+
+  .om-nav {
+    gap: 12px;
+  }
+
+  .om-nav-link {
+    display: none;
+  }
+
+  .om-pill {
+    padding: 6px 14px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .om-hint,
+  .om-egg {
+    animation: none;
+  }
+}
