@@ -1,0 +1,38 @@
+# Thibaut Sainrat — CPO & Product Builder
+
+> Portfolio personnel : https://thibautsainrat.fr
+
+## Présentation
+Thibaut Sainrat est ingénieur de formation, CPO (Chief Product Officer) et Product Builder. Il combine vision stratégique produit, compréhension terrain et prototypage technique (développement web, IA générative, applications) pour concevoir et livrer des solutions numériques viables.
+
+## Méthode & Leviers
+1. **Stratégie produit** : Aligner vision produit et enjeux business, arbitrer les investissements et naviguer le paysage technologique.
+2. **Leadership & ops** : Culture user-first et rigueur opérationnelle, structuration d'équipes pour passer du POC à la production.
+3. **Hybridité tech** : Démystifier la GenAI et les APIs pour embarquer équipes et clients, intégrer data et IA sans folklore avec rigueur et exigence.
+
+## Parcours professionnel
+- **2026 — présent** : CPO / Directeur de pôle — Cardiweb
+- **2025 — présent** : Fondateur — MyMémoires
+- **2023 — 2026** : Head of Product Management — Cardiweb
+- **2022 — 2023** : Lead Product Manager — Cardiweb
+- **2021 — 2022** : Senior Product Manager — Cardiweb
+- **2018 — 2021** : Product Manager — Haulogy
+- **2015 — 2018** : Product Owner / AMOA (Enedis) — mc2i
+
+## Projets personnels & Entrepreneuriat
+- **MyMémoires** (MVP) : Application dédiée au recueil et à la transmission des histoires de vie de nos anciens (guidage d'interview, enregistrement vocal, biographie littéraire générée par IA).
+  - *Stack* : React-Expo · STT Voxtral · Docker · TypeScript
+  - *Lien* : https://www.mymemoires.com
+- **Studio Lamarck** (Association) : Studio associatif indépendant de développement de projets digitaux accompagnant des porteurs de projet du concept à la production.
+  - *Stack* : Product design · Hosting · GenAI · Indie software
+  - *Lien* : https://studiolamarck.fr
+
+## Projets exploratoires (Laboratoire R&D)
+- **Live History** (En cours) : Dialoguer avec des personnages historiques simulés pour saisir les nuances d'une époque. (Stack : RAG · live TTS · React)
+- **Neon Riot** (En cours) : Jeu de stratégie arcade avec unités wind-up cybernétiques, gestion du timing et de l'énergie. (Stack : Godot · GDScript)
+- **Music Battle** (Archivé) : Invention d’une nouvelle interaction UX « Engagement-Weighted Voting » visant à pondérer un vote par l'engagement réel de l'utilisateur plutôt que la vitesse du clic. (Stack : React · Gamification)
+
+## Contact & Liens
+- **Email** : sainrat.t@gmail.com
+- **LinkedIn** : https://www.linkedin.com/in/thibaut-sainrat
+- **Blog** : https://sainrat.writizzy.blog/

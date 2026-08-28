@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Références de design / handoff (local uniquement)
+doc/
+
+# Réglages locaux de Claude Code (launch.json est versionné, lui)
+.claude/settings.local.json
