@@ -190,7 +190,9 @@ export function Contact() {
     <section className="om-panel om-panel--center" data-panel="07 Contact">
       <div className="om-kicker">Parlons-en</div>
       <h2 className="om-h2 om-h2--contact">
-        Un produit à <em>faire passer</em> de l'autre côté ?
+        Un besoin de renfort,
+        <br />
+        un projet à <em>concrétiser</em> ?
       </h2>
       <div className="om-contact-actions">
         <a className="om-chip" href={`mailto:${CONTACT.email}`}>
