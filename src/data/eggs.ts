@@ -16,6 +16,12 @@ export interface Egg {
   body?: string[];
   link?: { label: string; href: string };
   image?: { src: string; alt: string };
+  /**
+   * Variante de nuit. Le basculement suit `data-night`, posé par le moteur de
+   * scroll sur le conteneur sticky : il se fait donc en CSS, sans state React,
+   * et le portrait change en direct si la fenêtre reste ouverte à la tombée du jour.
+   */
+  imageNight?: { src: string; alt: string };
   /** Petite icône posée à gauche du titre, comme dans une boîte de dialogue. */
   icon?: { src: string; alt: string };
   /** Code de déblocage, affiché en pied de fenêtre à côté du lien. */
@@ -76,6 +82,7 @@ export const EGGS: Egg[] = [
     window: 'Thibaut Sainrat',
     title: "C'est moi",
     image: { src: '/Avatar_new.jpeg', alt: 'Portrait illustré de Thibaut Sainrat' },
+    imageNight: { src: '/avatar_neo.png', alt: 'Portrait de nuit de Thibaut Sainrat' },
     textTrigger: 'Thibaut',
   },
   {
@@ -99,6 +106,17 @@ export const EGGS: Egg[] = [
       "Le machine learning m'intéresse de plus en plus : je suis en ce moment la formation scikit-learn de l'Inria.",
     ],
     link: { label: 'Voir mon GitHub', href: 'https://github.com/sainrat-t' },
+  },
+  {
+    id: 'moulin',
+    window: 'Inspiration',
+    title: "D'où vient ce décor",
+    body: [
+      // TODO wording — à reprendre avec le reste.
+      "La direction artistique de cette page doit beaucoup au site de The Bridge, dont le design est magnifique. C'est lui qui m'a servi de point de départ, et le mérite du geste original leur revient.",
+      "J'ai voulu y ajouter ce qui me manquait : une touche parisienne, et plus précisément le 18e. La Butte, ses moulins, ses vignes et ses deux lignes de métro.",
+    ],
+    link: { label: 'Voir join-thebridge.com', href: 'https://www.join-thebridge.com/' },
   },
 ];
 

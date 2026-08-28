@@ -266,7 +266,7 @@ export default function App() {
                 Projets
               </button>
               <button className="om-pill" type="button" onClick={jump(NAV.contact)}>
-                Me parler
+                On discute ?
               </button>
             </nav>
           </header>
