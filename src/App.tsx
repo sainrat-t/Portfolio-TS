@@ -18,6 +18,13 @@ const NAV = { home: 0, methode: 2, parcours: 3, projets: 4, contact: 6 };
 /** Taille minimale d'une zone d'easter egg, en px CSS — le lama est plus petit que ça. */
 const MIN_HIT = 44;
 
+/**
+ * Marge de scroll ajoutée sur mobile, en px. La course y est figée sur la hauteur
+ * mesurée au chargement ; cette réserve garantit que `progress` atteint bien 1
+ * même quand la barre d'URL rétractée agrandit le viewport.
+ */
+const URLBAR_SLACK = 140;
+
 export default function App() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -45,11 +52,33 @@ export default function App() {
     let canvasCssH = 0;
     const t0 = performance.now();
 
+    // Sur mobile, la barre d'URL se rétracte pendant le scroll : `innerHeight` change
+    // en plein geste. Recalculer la course à ce moment-là déplace le sol sous les pieds
+    // — le carrousel saute latéralement sans que le doigt ait bougé. On fige donc la
+    // course et on ne la remesure qu'à la rotation, où la largeur change aussi.
+    // Le desktop garde la mesure dynamique : y redimensionner la fenêtre est délibéré.
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
+    let lockedH = 0;
+    let lockedW = 0;
+    /** Course de scroll figée (mobile) ; 0 sur desktop, où on la mesure à chaque tick. */
+    let travel = 0;
+
     // Le scroller fait exactement PANELS viewports, le sticky un seul : on mesure
     // en pixels pour que le calcul de progress ne dépende pas de l'unité CSS.
     const measure = () => {
       const vh = window.innerHeight;
-      scroller.style.height = `${PANELS * vh}px`;
+      if (coarse) {
+        if (!lockedH || window.innerWidth !== lockedW) {
+          lockedH = vh;
+          lockedW = window.innerWidth;
+        }
+        scroller.style.height = `${PANELS * lockedH + URLBAR_SLACK}px`;
+        travel = (PANELS - 1) * lockedH;
+      } else {
+        scroller.style.height = `${PANELS * vh}px`;
+        travel = 0;
+      }
+      // Le sticky suit toujours le viewport : le décor doit couvrir l'écran.
       sticky.style.height = `${vh}px`;
     };
 
@@ -88,7 +117,7 @@ export default function App() {
 
     // Seule source de vérité : la position du scroller dans le viewport.
     const tick = () => {
-      const max = scroller.offsetHeight - sticky.offsetHeight;
+      const max = travel || scroller.offsetHeight - sticky.offsetHeight;
       progress = max > 0 ? clamp01(-scroller.getBoundingClientRect().top / max) : 0;
       sticky.dataset.night = progress > NIGHT_AT ? '1' : '0';
 
@@ -114,7 +143,7 @@ export default function App() {
 
     // Navigation : tween JS sur le scroll, interrompu dès que l'utilisateur reprend la main.
     jumpRef.current = (index: number) => {
-      const max = scroller.offsetHeight - sticky.offsetHeight;
+      const max = travel || scroller.offsetHeight - sticky.offsetHeight;
       const from = window.scrollY;
       const to = from + scroller.getBoundingClientRect().top + (index / (PANELS - 1)) * max;
       cancelTween();
@@ -129,7 +158,21 @@ export default function App() {
       tween = requestAnimationFrame(step);
     };
 
-    const onScroll = () => tick();
+    // Mobile : les évènements de scroll partent plusieurs fois par image pendant
+    // l'inertie tactile, et chacun redessinait 845 rectangles. On n'en garde qu'un
+    // par image. Le desktop tient largement le rythme, on n'y touche pas.
+    let queued = 0;
+    const onScroll = coarse
+      ? () => {
+          if (queued) return;
+          queued = requestAnimationFrame(() => {
+            queued = 0;
+            tick();
+            // Ce repaint compte pour l'horloge 30 fps : inutile d'en refaire un.
+            lastFrame = performance.now();
+          });
+        }
+      : () => tick();
     const onResize = () => {
       measure();
       resizeCanvas();
@@ -166,6 +209,7 @@ export default function App() {
 
     return () => {
       cancelAnimationFrame(raf);
+      if (queued) cancelAnimationFrame(queued);
       cancelTween();
       window.clearTimeout(warm);
       observer.disconnect();
