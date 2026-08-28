@@ -81,20 +81,21 @@ public/
   voxtral.svg                icône d'un easter egg — servie en local, pas en lien externe
   Avatar_new.jpeg            portrait illustré, affiché par un easter egg
   avatar.png, avatar_neo.png ← utilisés uniquement par archive/
+  robots.txt                 règles d'exploration (autorise bots standards et IA)
+  llms.txt                   condensé Markdown pour la lecture directe par les IA
+  sitemap.xml                plan du site pour le référencement
 src/
   index.tsx                  point d'entrée React
   App.tsx                    ossature, scroll, navigation, boucle de rendu
   styles.css                 tokens, ossature, typographie, mobile
   components/
+    EasterEgg.tsx            fenêtre façon Windows 95, relue dans la DA
+    MusicBattleDemo.tsx      module interactif d'un easter egg
+    MyMemoiresRecorder.tsx   idem — l'enregistreur, en déclinaison pixel
     panels.tsx               les 7 panneaux, un composant par panneau
   data/
     content.ts               ← tout le contenu éditorial
     eggs.ts                  ← easter eggs + compteur de session
-  components/
-    MusicBattleDemo.tsx      module interactif d'un easter egg
-    MyMemoiresRecorder.tsx   idem — l'enregistreur, en déclinaison pixel
-  components/
-    EasterEgg.tsx            fenêtre façon Windows 95, relue dans la DA
   panorama/
     draw.ts                  le panorama, de haut en bas dans l'ordre de peinture
     utils.ts                 bruit déterministe, mélange de couleurs, smoothstep
@@ -217,6 +218,15 @@ Même mise en page qu'en desktop, **texte fortement réduit** — pas de layout 
 - **`GEMINI_API_KEY` n'est pas utilisée.** Aucun fichier de `src/` ne lit `process.env` ni `import.meta.env` ; seul le `define` de [`vite.config.ts`](vite.config.ts) en garde la trace.
 - **`framer-motion` et `lucide-react` restent dans `package.json`** alors que plus rien dans `src/` ne les importe : elles sont conservées pour que `archive/` reste exécutable. Vite les élimine du bundle.
 - **`doc/` est ignoré par Git** : c'est le dossier de références de design (handoff, prototypes `.dc.html`, captures), local uniquement.
+
+---
+
+## Référencement & IA
+
+- **`public/llms.txt`** : condensé Markdown structuré au format standard pour l'ingestion directe par les LLMs et moteurs IA (Perplexity, ChatGPT, Claude).
+- **`public/robots.txt`** : autorisation explicite de tous les robots d'indexation standards et crawlers IA (`GPTBot`, `ClaudeBot`, `PerplexityBot`, etc.).
+- **`public/sitemap.xml`** : plan du site pour les moteurs de recherche.
+- **`index.html`** : données structurées JSON-LD (Schema.org `Person`) et contenu textuel sémantique dans `<noscript>` pour les robots sans exécution JavaScript.
 
 ---
 
