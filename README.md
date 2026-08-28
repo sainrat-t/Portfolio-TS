@@ -203,7 +203,7 @@ Deux règles à ne pas casser : `ctx.imageSmoothingEnabled = false`, et l'arrond
 
 Même mise en page qu'en desktop, **texte fortement réduit** — pas de layout mobile séparé. Toutes les tailles sont en `clamp()` avec un plancher bas et un facteur `vw` élevé.
 
-- Sous **680 px**, l'en-tête ne garde que le logo et le bouton « Me parler » ; les trois liens texte disparaissent.
+- Sous **680 px**, l'en-tête ne garde que le logo et le bouton « On discute ? » ; les trois liens texte disparaissent.
 - Sous **620 px** de viewport, la boucle de la rame ligne 12 est doublée : deux fois moins de passages, décor moins chargé.
 - Chaque panneau est `overflow:hidden` sur `100vh`. **Contenu et paddings doivent tenir sous 100vh à 540 px de haut**, sinon le contenu centré déborde et chevauche le panorama. C'est la contrainte qui dimensionne le panneau Parcours, dont les marges sont en `vh`.
 - Le hero n'a pas de réserve basse : son contenu vit dans une boîte de `62vh`, ce qui garantit que « Scrollez » ne passe jamais sur les toits.

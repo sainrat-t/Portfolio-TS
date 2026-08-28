@@ -536,6 +536,10 @@ export function drawPanorama(canvas: HTMLCanvasElement, opts: PanoramaOptions): 
     }
     px(hubX - u * 0.9, hubY - u * 0.9, u * 1.8, u * 1.8, redDark);
 
+    // Le moyeu : centre géométrique du rotor, donc indépendant de `spin` — la
+    // zone ne tourne pas avec les pales, elle reste sur l'axe.
+    hits.push({ id: 'moulin', x: hubX - u * 2.5, y: hubY - u * 2.5, w: u * 5, h: u * 5 });
+
     // Les lumières s'allument quand le soleil est couché.
     if (night > 0.02) {
       ctx.globalAlpha = night;

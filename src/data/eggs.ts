@@ -100,6 +100,17 @@ export const EGGS: Egg[] = [
     ],
     link: { label: 'Voir mon GitHub', href: 'https://github.com/sainrat-t' },
   },
+  {
+    id: 'moulin',
+    window: 'Inspiration',
+    title: "D'où vient ce décor",
+    body: [
+      // TODO wording — à reprendre avec le reste.
+      "La direction artistique de cette page doit beaucoup au site de The Bridge, dont le design est magnifique. C'est lui qui m'a servi de point de départ, et le mérite du geste original leur revient.",
+      "J'ai voulu y ajouter ce qui me manquait : une touche parisienne, et plus précisément le 18e. La Butte, ses moulins, ses vignes et ses deux lignes de métro.",
+    ],
+    link: { label: 'Voir join-thebridge.com', href: 'https://www.join-thebridge.com/' },
+  },
 ];
 
 export const EGGS_BY_ID: Record<string, Egg> = Object.fromEntries(EGGS.map((e) => [e.id, e]));
