@@ -16,6 +16,12 @@ export interface Egg {
   body?: string[];
   link?: { label: string; href: string };
   image?: { src: string; alt: string };
+  /**
+   * Variante de nuit. Le basculement suit `data-night`, posé par le moteur de
+   * scroll sur le conteneur sticky : il se fait donc en CSS, sans state React,
+   * et le portrait change en direct si la fenêtre reste ouverte à la tombée du jour.
+   */
+  imageNight?: { src: string; alt: string };
   /** Petite icône posée à gauche du titre, comme dans une boîte de dialogue. */
   icon?: { src: string; alt: string };
   /** Code de déblocage, affiché en pied de fenêtre à côté du lien. */
@@ -76,6 +82,7 @@ export const EGGS: Egg[] = [
     window: 'Thibaut Sainrat',
     title: "C'est moi",
     image: { src: '/Avatar_new.jpeg', alt: 'Portrait illustré de Thibaut Sainrat' },
+    imageNight: { src: '/avatar_neo.png', alt: 'Portrait de nuit de Thibaut Sainrat' },
     textTrigger: 'Thibaut',
   },
   {

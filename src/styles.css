@@ -739,6 +739,20 @@ em {
   border: 1px solid var(--rule);
 }
 
+/* Portrait de jour / de nuit. Le `--day` n'est posé que s'il existe une variante,
+   donc une image seule n'est jamais masquée par la règle de nuit. */
+.om-egg-image--night {
+  display: none;
+}
+
+[data-night='1'] .om-egg-image--day {
+  display: none;
+}
+
+[data-night='1'] .om-egg-image--night {
+  display: block;
+}
+
 /* Icône à gauche du titre, comme dans une boîte de dialogue système. Affichée à
    40px : l'icône Voxtral est du pixel art en blocs de 8, et 160 / 40 = 4, donc
    chaque bloc retombe sur un nombre entier de pixels. */

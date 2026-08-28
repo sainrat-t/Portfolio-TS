@@ -88,7 +88,16 @@ export function EasterEgg({ egg, found, total, onClose }: Props) {
           </div>
 
           <div className="om-egg-body">
-            {egg.image && <img className="om-egg-image" src={egg.image.src} alt={egg.image.alt} />}
+            {egg.image && (
+              <img
+                className={egg.imageNight ? 'om-egg-image om-egg-image--day' : 'om-egg-image'}
+                src={egg.image.src}
+                alt={egg.image.alt}
+              />
+            )}
+            {egg.imageNight && (
+              <img className="om-egg-image om-egg-image--night" src={egg.imageNight.src} alt={egg.imageNight.alt} />
+            )}
             {egg.icon ? (
               <div className="om-egg-head">
                 <img className="om-egg-icon" src={egg.icon.src} alt="" />
