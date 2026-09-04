@@ -19,11 +19,43 @@ const NAV = { home: 0, methode: 2, parcours: 3, projets: 4, contact: 6 };
 const MIN_HIT = 44;
 
 /**
+ * Luminances du disque solaire entre lesquelles l'encre claire relaie l'encre
+ * sombre sous le soleil. Au zénith l'astre est un jaune franc : le texte sombre
+ * s'y détache très bien, l'éclaircir le dégraderait. En descendant, le disque
+ * vire au rouge brique de l'accent et le rapport s'inverse — passé SUN_INK_NONE
+ * l'encre claire commence à gagner, à SUN_INK_FULL elle a franchement gagné.
+ * Le fondu est calé sur le corps de texte en gris moyen : c'est lui qui bascule
+ * le premier, et c'est lui que le soleil traverse le plus souvent.
+ */
+const SUN_INK_NONE = 0.42;
+const SUN_INK_FULL = 0.3;
+
+/**
  * Marge de scroll ajoutée sur mobile, en px. La course y est figée sur la hauteur
  * mesurée au chargement ; cette réserve garantit que `progress` atteint bien 1
  * même quand la barre d'URL rétractée agrandit le viewport.
  */
 const URLBAR_SLACK = 140;
+
+/**
+ * L'ordre des panneaux — sa longueur doit rester égale à `PANELS`. Il est rendu
+ * deux fois : la page elle-même, et sa doublure en encre claire sous le soleil.
+ * D'où la factorisation : les deux copies doivent être identiques au pixel près,
+ * `onEgg` compris, puisque le déclencheur d'egg y ajoute un `<span>`.
+ */
+function Panels({ onEgg }: { onEgg: (id: string) => void }) {
+  return (
+    <>
+      <Hero />
+      <Qui onEgg={onEgg} />
+      <Methode />
+      <Parcours />
+      <Projets onEgg={onEgg} />
+      <Laboratoire onEgg={onEgg} />
+      <Contact />
+    </>
+  );
+}
 
 export default function App() {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -31,6 +63,8 @@ export default function App() {
   const trackRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hitsRef = useRef<HTMLDivElement>(null);
+  const sunInkRef = useRef<HTMLDivElement>(null);
+  const sunTrackRef = useRef<HTMLDivElement>(null);
   const jumpRef = useRef<(index: number) => void>(() => {});
 
   const [openEgg, setOpenEgg] = useState<Egg | null>(null);
@@ -42,7 +76,12 @@ export default function App() {
     const track = trackRef.current;
     const canvas = canvasRef.current;
     const hitLayer = hitsRef.current;
-    if (!scroller || !sticky || !track || !canvas || !hitLayer) return;
+    const sunInk = sunInkRef.current;
+    const sunTrack = sunTrackRef.current;
+    if (!scroller || !sticky || !track || !canvas || !hitLayer || !sunInk || !sunTrack) return;
+
+    /** Les deux copies de la page : l'encre sombre, et l'encre claire du calque solaire. */
+    const tracks = [track, sunTrack];
 
     let progress = 0;
     let clock = 0;
@@ -93,11 +132,50 @@ export default function App() {
       }
     };
 
-    // Les boîtes cliquables viennent du dessin lui-même, en unités d'art : elles
-    // ne peuvent donc pas dériver du décor. On les repositionne à chaque peinture.
+    /** Dernier état posé sur le calque solaire : ne rien réécrire tant qu'il n'a pas bougé. */
+    let sunKey = '';
+
+    // Le calque d'encre claire comme les boîtes cliquables viennent du dessin
+    // lui-même, en unités d'art : ni l'un ni les autres ne peuvent dériver du
+    // décor. On les replace à chaque peinture.
     const paint = () => {
-      const hits = drawPanorama(canvas, { progress, clock, viewportWidth: window.innerWidth });
+      const { hits, sun } = drawPanorama(canvas, { progress, clock, viewportWidth: window.innerWidth });
       const perArt = canvasCssH / ART_HEIGHT;
+
+      // Le disque du soleil, converti en pixels CSS pour découper le calque
+      // d'encre claire. La découpe vit dans le repère du viewport : elle est
+      // donc portée par le calque, jamais par la piste, qui elle défile.
+      const sunPx =
+        sun && perArt
+          ? {
+              x: (sun.x * perArt).toFixed(1),
+              y: (sun.y * perArt).toFixed(1),
+              // Un pixel de retrait : le disque est peint en pixel-art, son bord
+              // réel reste en deçà du cercle théorique. Sans ce retrait, un bout
+              // de lettre claire déborderait sur le ciel, où il disparaîtrait.
+              r: Math.max(0, sun.r * perArt - 1).toFixed(1),
+              // Deux fondus se multiplient : la bascule sombre → clair au fil
+              // de l'assombrissement du disque, et l'effacement du soleil à la
+              // tombée de la nuit.
+              a: (
+                sun.a * clamp01((SUN_INK_NONE - sun.l) / (SUN_INK_NONE - SUN_INK_FULL))
+              ).toFixed(3),
+            }
+          : null;
+      const key = sunPx && sunPx.a !== '0.000' ? `${sunPx.x} ${sunPx.y} ${sunPx.r} ${sunPx.a}` : '';
+      if (key !== sunKey) {
+        sunKey = key;
+        // Invisible = hors rendu : rien à découper ni à rastériser tant que
+        // le soleil est trop haut pour gêner, ou déjà couché.
+        sunInk.style.display = key ? 'block' : 'none';
+        if (sunPx) {
+          sunInk.style.opacity = sunPx.a;
+          sunInk.style.setProperty('--sun-x', `${sunPx.x}px`);
+          sunInk.style.setProperty('--sun-y', `${sunPx.y}px`);
+          sunInk.style.setProperty('--sun-r', `${sunPx.r}px`);
+        }
+      }
+
       const byId = new Map(hits.map((h) => [h.id, h]));
       for (const node of Array.from(hitLayer.children) as HTMLElement[]) {
         const box = byId.get(node.dataset.egg || '');
@@ -123,14 +201,22 @@ export default function App() {
 
       const first = track.firstElementChild;
       const panelWidth = first ? first.getBoundingClientRect().width : sticky.clientWidth;
-      track.style.transform = `translate3d(${-progress * (PANELS - 1) * panelWidth}px,0,0)`;
+      const shift = `translate3d(${-progress * (PANELS - 1) * panelWidth}px,0,0)`;
+      for (const layer of tracks) layer.style.transform = shift;
 
       // Les panneaux voisins s'effacent et glissent légèrement : un seul est net.
-      for (let i = 0; i < track.children.length; i++) {
-        const panel = track.children[i] as HTMLElement;
+      // Le calque solaire rejoue exactement la même page : il reçoit les mêmes
+      // valeurs, sans quoi son encre claire décalerait d'avec les lettres.
+      for (let i = 0; i < PANELS; i++) {
         const opacity = Math.max(0, 1 - Math.abs(progress * (PANELS - 1) - i) * 1.45);
-        panel.style.opacity = opacity.toFixed(3);
-        panel.style.transform = `translateY(${((1 - opacity) * 22).toFixed(1)}px)`;
+        const alpha = opacity.toFixed(3);
+        const slide = `translateY(${((1 - opacity) * 22).toFixed(1)}px)`;
+        for (const layer of tracks) {
+          const panel = layer.children[i] as HTMLElement | undefined;
+          if (!panel) continue;
+          panel.style.opacity = alpha;
+          panel.style.transform = slide;
+        }
       }
 
       paint();
@@ -230,7 +316,9 @@ export default function App() {
   // La fenêtre vit dans le conteneur sticky : elle reste donc calée sur le
   // viewport pendant que le décor défile derrière, et ne se ferme qu'à la demande.
   useEffect(() => {
-    trackRef.current?.classList.toggle('om-track--dimmed', openEgg !== null);
+    for (const layer of [trackRef.current, sunTrackRef.current]) {
+      layer?.classList.toggle('om-track--dimmed', openEgg !== null);
+    }
   }, [openEgg]);
 
   const jump = (index: number) => (event: { preventDefault: () => void }) => {
@@ -272,13 +360,19 @@ export default function App() {
           </header>
 
           <div className="om-track" ref={trackRef}>
-            <Hero />
-            <Qui onEgg={openEggById} />
-            <Methode />
-            <Parcours />
-            <Projets onEgg={openEggById} />
-            <Laboratoire onEgg={openEggById} />
-            <Contact />
+            <Panels onEgg={openEggById} />
+          </div>
+
+          {/* Le soleil passe derrière le texte : les caractères qu'il recouvre
+              basculent en encre claire, la seule lisible sur le disque une fois
+              celui-ci descendu dans les rouges. C'est la page entière rejouée
+              en clair, puis découpée au disque — une découpe ne connaît pas les
+              lettres, elle coupe au pixel : la bascule suit donc exactement le
+              bord du soleil, quitte à trancher un caractère en deux. */}
+          <div className="om-sun-ink" ref={sunInkRef} aria-hidden="true" inert>
+            <div className="om-track" ref={sunTrackRef}>
+              <Panels onEgg={openEggById} />
+            </div>
           </div>
 
           <div className="om-hits" ref={hitsRef} aria-hidden="true">

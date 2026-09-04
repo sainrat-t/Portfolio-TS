@@ -21,8 +21,17 @@ export function css(c: RGB): string {
   return 'rgb(' + c.map(Math.round).join(',') + ')';
 }
 
-export function mix(a: RGB, b: RGB, t: number): string {
-  return css(lerpRgb(a, b, t));
+/**
+ * Luminance relative sRGB (0 → 1), au sens WCAG. Sert à savoir de quel côté
+ * penche un fond : au-dessus, l'encre sombre se détache mieux ; en dessous,
+ * c'est l'encre claire.
+ */
+export function luminance(c: RGB): number {
+  const ch = c.map((v) => {
+    const k = clamp01(v / 255);
+    return k <= 0.03928 ? k / 12.92 : Math.pow((k + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
 }
 
 export function clamp01(v: number): number {

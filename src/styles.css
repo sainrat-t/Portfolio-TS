@@ -109,6 +109,57 @@ a:hover {
   will-change: transform;
 }
 
+/* Doublure de la page en encre claire, découpée au disque du soleil : seuls les
+   caractères que l'astre recouvre en héritent. Le fond y est transparent, elle
+   se superpose donc exactement à l'encre sombre qu'elle remplace.
+
+   La découpe est un cercle plein à bord franc, comme le soleil pixel-art qu'elle
+   suit : pas de dégradé, sinon les lettres du pourtour traverseraient une zone
+   de demi-teinte, qui est précisément le ton le moins lisible sur l'orange.
+   Un clip-path plutôt qu'un masque : le bord est géométrique donc exact, et le
+   navigateur borne sa rastérisation au disque au lieu de traiter tout l'écran.
+   App pose --sun-x / --sun-y / --sun-r à chaque peinture, en pixels CSS et dans
+   le repère du viewport — le calque, contrairement à la piste, ne défile pas. */
+.om-sun-ink {
+  /* La palette du calque n'est pas celle de la nuit : le fond n'est pas un ciel
+     bleu sombre mais un disque orange soutenu (le soleil vire à l'accent en
+     descendant), sur lequel les tons de nuit ne contrastent presque pas. Il faut
+     monter jusqu'au blanc chaud du décor — celui des nuages — pour que la lettre
+     se détache. L'accent y monte aussi : un rouge brique sur de l'orange ne se
+     lit pas, et sur quelques dizaines de pixels de disque la lisibilité prime
+     sur la hiérarchie des couleurs. */
+  --ink: #fffdf5;
+  --ink-mid: #fffaec;
+  --ink-soft: #fdf7e6;
+  --ink-faint: #f7efda;
+  --rule: rgba(255, 253, 245, 0.55);
+  --rule-strong: rgba(255, 253, 245, 0.7);
+  --rule-soft: rgba(255, 253, 245, 0.4);
+  --accent: #fff1e0;
+  --archived: #f4ecd9;
+
+  position: absolute;
+  inset: 0;
+  z-index: 21;
+  display: none;
+  color: var(--ink);
+  pointer-events: none;
+  /* La doublure est un doublon de tout le texte de la page : hors de la sélection,
+     sinon un « tout sélectionner » copierait le site en double. `inert` la sort
+     déjà du focus clavier et de l'arbre d'accessibilité. */
+  user-select: none;
+  -webkit-user-select: none;
+  clip-path: circle(var(--sun-r, 0px) at var(--sun-x, -1px) var(--sun-y, -1px));
+}
+
+/* Le sticky anime sa bascule jour/nuit sur 0.55 s ; ici l'encre est claire de
+   naissance et ne change jamais de camp — la transition n'aurait rien à animer
+   qu'un fondu parasite à chaque réapparition du disque. */
+.om-sun-ink,
+.om-sun-ink * {
+  transition: none;
+}
+
 /* ── En-tête ───────────────────────────────────────────────── */
 
 .om-header {

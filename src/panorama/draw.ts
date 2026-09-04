@@ -1,4 +1,4 @@
-import { RGB, clamp01, css, hexToRgb, lerpRgb, mix, rand, smoothstep } from './utils';
+import { RGB, clamp01, css, hexToRgb, lerpRgb, luminance, rand, smoothstep } from './utils';
 
 /** Nombre de panneaux du carrousel : pilote la hauteur du scroller ET la largeur du monde. */
 export const PANELS = 7;
@@ -161,6 +161,31 @@ function lamaSprites(): [HTMLCanvasElement, HTMLCanvasElement] | null {
   return [flat, litC];
 }
 
+/**
+ * Le soleil tel qu'il vient d'être peint, en **unités d'art**. Comme les boîtes
+ * cliquables, il est renvoyé par le dessin plutôt que recalculé côté page :
+ * l'encre claire ne peut donc pas dériver du disque qu'elle est censée suivre.
+ */
+export interface PanoramaSun {
+  x: number;
+  y: number;
+  r: number;
+  /** Opacité de peinture : le disque s'efface à la tombée de la nuit. */
+  a: number;
+  /**
+   * Luminance relative du disque. Elle chute au fil de la descente — le jaune
+   * du zénith vire au rouge brique de l'accent — et c'est elle qui décide de
+   * quel côté penche la lisibilité du texte posé par-dessus.
+   */
+  l: number;
+}
+
+export interface PanoramaFrame {
+  hits: PanoramaHit[];
+  /** `null` quand le soleil est couché — plus rien à éclaircir. */
+  sun: PanoramaSun | null;
+}
+
 export interface PanoramaOptions {
   /** 0 → 1, dérivé du scroll : caméra, cycle jour/nuit. */
   progress: number;
@@ -181,10 +206,11 @@ export interface PanoramaOptions {
   dusk?: boolean;
 }
 
-export function drawPanorama(canvas: HTMLCanvasElement, opts: PanoramaOptions): PanoramaHit[] {
+export function drawPanorama(canvas: HTMLCanvasElement, opts: PanoramaOptions): PanoramaFrame {
   const hits: PanoramaHit[] = [];
+  let sun: PanoramaSun | null = null;
   const ctx = canvas.getContext('2d');
-  if (!ctx || !canvas.width || !canvas.height) return hits;
+  if (!ctx || !canvas.width || !canvas.height) return { hits, sun };
 
   const p = clamp01(opts.progress);
   const clock = opts.clock || 0;
@@ -254,11 +280,14 @@ export function drawPanorama(canvas: HTMLCanvasElement, opts: PanoramaOptions): 
   const su = Math.max(1, B * 0.5);
   const sunX = W * 0.72 - dayP * W * 0.44;
   const sunY = H * 0.14 + dayP * (horizon - H * 0.06);
-  const sunCol = dusk ? mix([246, 189, 63], accent, Math.min(1, dayP * 1.2)) : 'rgb(246,189,63)';
+  const sunNoon: RGB = [246, 189, 63];
+  const sunRgb = dusk ? lerpRgb(sunNoon, accent, Math.min(1, dayP * 1.2)) : sunNoon;
+  const sunR = B * 3.2;
   if (night < 0.98) {
     ctx.globalAlpha = 1 - night;
-    disc(sunX, sunY, B * 3.2, sunCol, su, horizon - B * 0.5);
+    disc(sunX, sunY, sunR, css(sunRgb), su, horizon - B * 0.5);
     ctx.globalAlpha = 1;
+    sun = { x: sunX, y: sunY, r: sunR, a: 1 - night, l: luminance(sunRgb) };
   }
 
   // Lune en croissant — elle se lève à mesure que le soleil se couche, puis
@@ -956,5 +985,5 @@ export function drawPanorama(canvas: HTMLCanvasElement, opts: PanoramaOptions): 
     px(sx + W * 0.06 + t, bandY, t * 7, Math.max(1, t * 0.5), 'rgba(255,255,255,.85)');
   });
 
-  return hits;
+  return { hits, sun };
 }
